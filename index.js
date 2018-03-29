@@ -1,5 +1,6 @@
 'use strict';
 var cheerio = require('cheerio');
+var url = require('url');
 
 // http://stackoverflow.com/questions/14480345/how-to-get-the-nth-occurrence-in-a-string
 function getPosition(str, m, i) {
@@ -10,10 +11,11 @@ hexo.extend.filter.register('after_post_render', function(data){
   var config = hexo.config;
   if(config.post_asset_folder){
     var link = data.permalink;
-	var beginPos = getPosition(link, '/', 3) + 1;
-	// In hexo 3.1.1, the permalink of "about" page is like ".../about/index.html".
-	var endPos = link.lastIndexOf('/') + 1;
-    link = link.substring(beginPos, endPos);
+    link = url.parse(link).pathname;
+    link = link.split(".")[0];
+    if (link[link.length - 1] != "/") {
+        link += "/";
+    }
 
     var toprocess = ['excerpt', 'more', 'content'];
     for(var i = 0; i < toprocess.length; i++){
@@ -43,8 +45,8 @@ hexo.extend.filter.register('after_post_render', function(data){
 			  if(srcArray.length > 1)
 				srcArray.shift();
 			  src = srcArray.join('/');
-			  $(this).attr('src', config.root + link + src);
-			  console.info&&console.info("update link as:-->"+config.root + link + src);
+			  $(this).attr('src', link + src);
+			  console.info&&console.info("update link as:-->" + link + src);
 			}
 		}else{
 			console.info&&console.info("no src attr, skipped...");
